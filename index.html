@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#00b95a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Futsal Nepal" />
+    <meta name="description" content="FUTSAL NEPAL is a modern futsal booking and court management platform for players, owners, and administrators in Nepal." />
+    <meta name="keywords" content="futsal, football, booking, Nepal, courts, tournaments, admin dashboard" />
+    <meta property="og:title" content="FUTSAL NEPAL | Book, Play, Connect" />
+    <meta property="og:description" content="Book futsal courts, manage reservations, and run your venue with an integrated admin dashboard." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="assets/logo.svg" />
+    <meta property="og:site_name" content="FUTSAL NEPAL" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FUTSAL NEPAL" />
+    <meta name="twitter:description" content="Book, play, and connect through Nepal's futsal booking platform." />
+    <title>FUTSAL NEPAL | Book, Play, Connect</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="css/style.css?v=20261105-2" />
+    <link rel="stylesheet" href="css/responsive.css?v=20261105-11" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  </head>
+  <body>
+    <div id="publicLanding" class="public-landing">
+      <header class="landing-header">
+        <a class="landing-brand" href="#landingHome" aria-label="Futsal Nepal home">
+          <img src="assets/logo.svg" alt="" />
+          <span>FUTSAL <b>NEPAL</b></span>
+        </a>
+        <nav class="landing-nav" id="landingNav" aria-label="Main navigation">
+          <a href="#howItWorks">How it works</a>
+          <a href="#popularGrounds">Explore grounds</a>
+          <a href="#landingFaq">FAQs</a>
+          <a href="#landingContact">Contact</a>
+        </nav>
+        <button class="landing-menu-toggle" type="button" aria-label="Open navigation" aria-controls="landingNav" aria-expanded="false">
+          <i class="fa-solid fa-bars" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-secondary landing-sign-in" type="button" data-open-login="user">Sign in</button>
+      </header>
+
+      <main>
+        <section class="landing-hero" id="landingHome" aria-labelledby="landingHeroTitle">
+          <img class="landing-hero-image" src="https://images.unsplash.com/photo-1630420598913-44208d36f9af?auto=format&fit=crop&w=1800&q=80" alt="A football pitch ready for a futsal match" fetchpriority="high" />
+          <div class="landing-hero-shade"></div>
+          <div class="landing-hero-content">
+            <p class="landing-eyebrow"><i class="fa-solid fa-futbol"></i> FIND YOUR GAME</p>
+            <h1 id="landingHeroTitle">Your next match<br />starts here.</h1>
+            <p>Discover futsal grounds, check real-time availability, and get your team on the pitch.</p>
+            <div class="landing-hero-actions">
+              <a class="btn btn-primary" href="#landingSearch"><i class="fa-solid fa-magnifying-glass"></i> Find futsal</a>
+              <button class="btn btn-light" type="button" data-open-login="user" data-start-booking="true"><i class="fa-regular fa-calendar-check"></i> Book now</button>
+            </div>
+            <div class="landing-proof"><span><i class="fa-solid fa-location-dot"></i> Grounds across Nepal</span><span><i class="fa-solid fa-clock"></i> Live time-slot availability</span></div>
+          </div>
+          <div class="landing-search" id="landingSearch">
+            <div><strong>Find a pitch for your team</strong><span>Choose a location, budget, or playing style to get started.</span></div>
+            <form id="publicSearchForm">
+              <label><span class="sr-only">City or location</span><i class="fa-solid fa-location-dot"></i><input id="publicSearchLocation" type="search" placeholder="City or location" autocomplete="address-level2" /></label>
+              <label><span class="sr-only">Maximum price per hour</span><i class="fa-solid fa-wallet"></i><select id="publicSearchBudget"><option value="">Any price</option><option value="2000">Up to NPR 2,000/hr</option><option value="2500">Up to NPR 2,500/hr</option><option value="3000">Up to NPR 3,000/hr</option></select></label>
+              <label><span class="sr-only">Ground type</span><i class="fa-solid fa-house"></i><select id="publicSearchType"><option value="">Indoor or outdoor</option><option value="Indoor">Indoor</option><option value="Outdoor">Outdoor</option></select></label>
+              <button class="btn btn-primary" type="submit">Search grounds <i class="fa-solid fa-arrow-right"></i></button>
+            </form>
+          </div>
+        </section>
+
+        <section class="landing-section landing-how" id="howItWorks" aria-labelledby="howItWorksTitle">
+          <div class="landing-section-heading"><p class="landing-eyebrow">EASY AS 1-2-3</p><h2 id="howItWorksTitle">From search to kickoff.</h2><p>Less time organizing. More time playing.</p></div>
+          <div class="landing-steps">
+            <article><span class="landing-step-icon"><i class="fa-solid fa-magnifying-glass"></i></span><span class="landing-step-number">01</span><h3>Find your ground</h3><p>Compare nearby venues, prices, facilities, and player ratings.</p></article>
+            <article><span class="landing-step-icon"><i class="fa-regular fa-calendar-check"></i></span><span class="landing-step-number">02</span><h3>Choose a time</h3><p>Check available slots and pick the court and time that fit your team.</p></article>
+            <article><span class="landing-step-icon"><i class="fa-solid fa-futbol"></i></span><span class="landing-step-number">03</span><h3>Get out and play</h3><p>Send your booking request and keep track of updates from your dashboard.</p></article>
+          </div>
+        </section>
+
+        <section class="landing-featured" id="popularGrounds" aria-labelledby="popularGroundsTitle">
+          <div class="landing-featured-copy"><p class="landing-eyebrow">YOUR NEXT HOME PITCH</p><h2 id="popularGroundsTitle">Great grounds.<br />A better game.</h2><p>Browse popular futsal grounds, compare hourly prices, and read player reviews in one place.</p><button class="btn btn-primary" type="button" data-open-login="user">Explore grounds <i class="fa-solid fa-arrow-right"></i></button></div>
+          <div class="landing-featured-visual" role="img" aria-label="Indoor futsal court with green turf"><span class="landing-rating-chip"><i class="fa-solid fa-star"></i> Player-rated venues</span><span class="landing-visual-caption">Find your team's next favorite pitch.</span></div>
+        </section>
+
+        <section class="landing-section landing-reviews" aria-labelledby="landingReviewsTitle">
+          <div class="landing-review-mark" aria-hidden="true"><i class="fa-solid fa-quote-left"></i></div>
+          <p class="landing-eyebrow">MADE FOR THE LOVE OF THE GAME</p>
+          <h2 id="landingReviewsTitle">Choose with confidence.</h2>
+          <p>See ratings and reviews from players, then find the right ground for your next match.</p>
+          <button class="btn btn-secondary" type="button" data-open-login="user">See player reviews</button>
+        </section>
+
+        <section class="landing-section landing-faq" id="landingFaq" aria-labelledby="landingFaqTitle">
+          <div class="landing-section-heading"><p class="landing-eyebrow">NEED TO KNOW</p><h2 id="landingFaqTitle">A few quick answers.</h2></div>
+          <div class="landing-faq-list">
+            <details><summary>How do I find a futsal ground?</summary><p>Use the search to narrow grounds by location, price, and indoor or outdoor court type. Sign in to see venue details and reviews.</p></details>
+            <details><summary>How do I book a court?</summary><p>Choose a ground, date, and available time slot from your player dashboard, then submit a booking request for the venue to confirm.</p></details>
+            <details><summary>Can I see my booking status?</summary><p>Yes. Your player dashboard shows booking updates and notifications after you sign in.</p></details>
+          </div>
+        </section>
+
+        <section class="landing-contact" id="landingContact" aria-labelledby="landingContactTitle">
+          <div><p class="landing-eyebrow">LET'S GET YOU PLAYING</p><h2 id="landingContactTitle">Ready to find your pitch?</h2><p>Find a ground, bring your team, and make your next match happen.</p></div>
+          <div class="landing-contact-details">
+            <h3>Contact</h3>
+            <a class="btn btn-light" href="mailto:shishirgautam620@gmail.com"><i class="fa-regular fa-envelope" aria-hidden="true"></i> shishirgautam620<wbr>@gmail.com</a>
+            <a class="btn btn-light" href="tel:+9779868963726"><i class="fa-solid fa-phone" aria-hidden="true"></i> +977 9868963726</a>
+          </div>
+        </section>
+      </main>
+      <footer class="landing-footer"><a class="landing-brand" href="#landingHome"><img src="assets/logo.svg" alt="" /><span>FUTSAL <b>NEPAL</b></span></a><span>Book · Play · Connect</span><span class="landing-footer-credit">Designed and developed by <a href="https://shishirgtm.com.np" target="_blank" rel="noopener noreferrer">Shishir Gautam</a></span></footer>
+    </div>
+
+    <div id="authScreen" class="auth-screen hidden">
+      <div class="auth-layout">
+        <aside class="auth-welcome" aria-label="Futsal Nepal">
+          <a class="auth-welcome-brand" href="#landingHome" data-show-landing>
+            <span class="auth-welcome-mark"><img src="assets/logo.svg" alt="" /></span>
+            <span>FUTSAL <strong>NEPAL</strong></span>
+          </a>
+          <div class="auth-welcome-copy">
+            <p class="auth-welcome-eyebrow"><i class="fa-solid fa-futbol" aria-hidden="true"></i> BOOK · PLAY · CONNECT</p>
+            <h1>Your game<br />starts here.</h1>
+            <p>Find your next pitch, manage your bookings, and keep your futsal community moving.</p>
+            <div class="auth-welcome-points">
+              <span><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Easy court bookings</span>
+              <span><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Your games in one place</span>
+            </div>
+          </div>
+          <span class="auth-welcome-footnote">Made for the love of the game.</span>
+        </aside>
+        <div class="auth-card">
+          <div class="brand-badge">FUTSAL NEPAL</div>
+          <p class="eyebrow">Access portal</p>
+          <h2>Welcome back</h2>
+          <p class="muted">Choose your access type and sign in to continue.</p>
+
+          <div class="access-toggle">
+            <button class="access-btn active" data-role="admin" type="button">Admin</button>
+            <button class="access-btn" data-role="user" type="button">User</button>
+            <button class="access-btn" data-role="owner" type="button">Ground owner</button>
+          </div>
+
+          <form id="authLoginForm" autocomplete="off">
+            <input type="hidden" id="authLoginRole" value="admin" />
+            <label>
+              Email
+              <input type="email" id="authLoginEmail" value="" autocomplete="off" required />
+            </label>
+            <label>
+              Password
+              <input type="password" id="authLoginPassword" value="" autocomplete="new-password" required />
+            </label>
+            <button class="auth-link auth-forgot-password hidden" id="forgotPasswordBtn" type="button" hidden>Forgot password?</button>
+            <button class="btn btn-primary full-width" type="submit">Login</button>
+          </form>
+          <p class="auth-register-prompt" id="authRegisterPrompt">
+            <span>Don't have an account?</span>
+            <button class="auth-link" id="showRegisterBtn" type="button">Create an account</button>
+          </p>
+          <button class="auth-link auth-home-link" type="button" data-show-landing><i class="fa-solid fa-arrow-left"></i> Back to home</button>
+
+          <form id="registerForm" class="hidden" hidden autocomplete="off">
+            <div class="auth-form-heading">
+              <h3>Create your account</h3>
+              <p class="muted">Register as a player or Ground owner.</p>
+            </div>
+            <label>Full name<input type="text" id="registerName" autocomplete="off" required /></label>
+            <label>Email or phone number<input type="email" id="registerEmail" autocomplete="off" required /></label>
+            <label>Password<input type="password" id="registerPassword" autocomplete="new-password" minlength="6" required /></label>
+            <label>Account type<select id="registerRole"><option value="User">Player / User</option><option value="Owner">Ground Owner</option></select></label>
+            <button class="btn btn-primary full-width" type="submit">Create account</button>
+            <button class="auth-link" id="showLoginBtn" type="button">Back to login</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div id="authLoginLoading" class="auth-login-loading" role="status" aria-live="polite" hidden>
+      <div class="auth-login-panel">
+        <div class="auth-login-brand"><img src="assets/logo.svg" alt="" /><span>FUTSAL NEPAL</span></div>
+        <span class="auth-login-spinner" aria-hidden="true"></span>
+        <span class="auth-login-message">Logging in...</span>
+        <span class="auth-login-subtext">Please wait while we securely prepare your session.</span>
+      </div>
+    </div>
+
+    <div id="userSection" class="user-section hidden">
+      <div class="user-dashboard-shell">
+        <aside class="user-sidebar">
+          <div class="user-sidebar-brand">
+            <div class="brand-mark"><img src="assets/logo.svg" alt="Futsal Nepal" /></div>
+            <strong>FUTSAL NEPAL</strong>
+          </div>
+          <nav class="user-sidebar-nav" aria-label="User navigation">
+            <button type="button" data-user-scroll="userDashboardBanner"><i class="fa-solid fa-house"></i><span>Dashboard</span></button>
+            <button type="button" data-user-scroll="userProfilePanel"><i class="fa-solid fa-user"></i><span>Profile</span></button>
+            <button type="button" data-user-scroll="userBookingsPanel"><i class="fa-regular fa-calendar-check"></i><span>My bookings</span></button>
+            <button type="button" data-user-scroll="userCourtsPanel"><i class="fa-solid fa-futbol"></i><span>Find a futsal</span></button>
+            <button type="button" data-user-scroll="userTeamsPanel"><i class="fa-solid fa-people-group"></i><span>Teams</span></button>
+            <button type="button" data-user-scroll="userNotificationsPanel"><i class="fa-solid fa-bell"></i><span>Notifications</span></button>
+            <button type="button" data-user-scroll="userTournamentsPanel"><i class="fa-solid fa-trophy"></i><span>Tournaments</span></button>
+            <button type="button" data-user-scroll="userMyTournamentsPanel"><i class="fa-solid fa-list-check"></i><span>My tournaments</span></button>
+            <button type="button" data-user-action="close-nav"><i class="fa-solid fa-xmark"></i><span>Exit menu</span></button>
+          </nav>
+          <div class="user-sidebar-note"><i class="fa-solid fa-circle-check"></i><span>Book your next match in a few clicks.</span></div>
+        </aside>
+        <button class="user-sidebar-backdrop" type="button" aria-label="Close navigation" hidden></button>
+
+        <main class="user-dashboard-main" id="userDashboardTop">
+          <nav class="user-top-nav-bar" aria-label="User sections">
+            <button type="button" data-user-scroll="userDashboardBanner"><i class="fa-solid fa-house"></i><span>Dashboard</span></button>
+            <button type="button" data-user-scroll="userProfilePanel"><i class="fa-solid fa-user"></i><span>Profile</span></button>
+            <button type="button" data-user-scroll="userBookingsPanel"><i class="fa-regular fa-calendar-check"></i><span>My bookings</span></button>
+            <button type="button" data-user-scroll="userCourtsPanel"><i class="fa-solid fa-futbol"></i><span>Find a futsal</span></button>
+            <button type="button" data-user-scroll="userTeamsPanel"><i class="fa-solid fa-people-group"></i><span>Teams</span></button>
+            <button type="button" data-user-scroll="userNotificationsPanel"><i class="fa-solid fa-bell"></i><span>Notifications</span></button>
+            <button type="button" data-user-scroll="userTournamentsPanel"><i class="fa-solid fa-trophy"></i><span>Tournaments</span></button>
+            <button type="button" data-user-scroll="userMyTournamentsPanel"><i class="fa-solid fa-list-check"></i><span>My tournaments</span></button>
+          </nav>
+          <header class="user-header">
+            <button class="user-mobile-menu" id="userMobileMenuBtn" type="button" aria-label="Open navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+            <div>
+              <p class="eyebrow text-green">FUTSAL NEPAL</p>
+              <h2><span id="userGreetingText">Good morning</span>, <span id="userDisplayName">player</span></h2>
+              <p class="muted">Find a pitch, manage your bookings, and keep your next match in sight.</p>
+            </div>
+            <div class="user-header-actions">
+              <div class="owner-notification-menu user-notification-menu">
+                <button class="owner-header-action" id="userNotificationsBtn" type="button" aria-label="View notifications" title="Notifications" aria-expanded="false">
+                  <i class="fa-solid fa-bell"></i><span>Notifications</span><strong id="userNotificationsCount">0</strong>
+                </button>
+                <div class="owner-notification-dropdown is-hidden" id="userNotificationDropdown">
+                  <div class="owner-notification-dropdown__header"><strong>Notifications</strong><span id="userNotificationSummary">0 unread</span></div>
+                  <div id="userNotificationPreview" class="owner-notification-dropdown__list"></div>
+                  <button type="button" class="owner-notification-dropdown__footer" id="markUserNotificationsReadBtn">Mark all read</button>
+                  <button type="button" class="owner-notification-dropdown__footer" id="viewUserNotificationsBtn">View all notifications</button>
+                </div>
+              </div>
+              <button class="btn btn-secondary" id="userLogoutBtn" type="button">Logout</button>
+            </div>
+          </header>
+          <div class="user-view-heading" aria-live="polite">
+            <p class="eyebrow text-green">Player portal</p>
+            <h2 id="userCurrentPageTitle">Dashboard</h2>
+          </div>
+          <section class="portal-hero user-portal-hero" id="userProfilePanel" aria-labelledby="userHeroTitle">
+            <div class="portal-hero__copy">
+              <p class="eyebrow">Player dashboard</p>
+              <h1 id="userHeroTitle">Your next match starts here.</h1>
+              <p>Welcome back, <strong id="userHeroName">player</strong>. Find a court, manage your bookings, and stay ready to play.</p>
+              <p class="user-hero-date"><i class="fa-regular fa-calendar" aria-hidden="true"></i><span id="userCurrentDate"></span><span class="user-hero-motto">Play together. Get better together.</span></p>
+              <div class="portal-hero__actions">
+                <button class="btn btn-primary" type="button" data-user-scroll="userCourtsPanel"><i class="fa-solid fa-location-dot"></i> Find a futsal</button>
+                <button class="btn btn-ghost-light" type="button" data-user-scroll="userProfilePanel"><i class="fa-solid fa-user"></i> View profile</button>
+              </div>
+            </div>
+            <div class="portal-hero__profile">
+              <div class="portal-hero__profile-identity" id="userHeroProfile"></div>
+              <button class="portal-hero__edit-button" id="userProfileEditBtn" type="button" aria-label="Edit profile" title="Edit profile"><i class="fa-solid fa-pen"></i><span>Edit profile</span></button>
+              <form id="userProfileForm" class="user-profile-form portal-hero__profile-form hidden">
+                <label>Name<input name="name" type="text" required /></label>
+                <button class="btn btn-primary" type="submit"><i class="fa-solid fa-user-pen"></i> Save profile</button>
+              </form>
+            </div>
+          </section>
+
+          <section class="user-dashboard-banner" id="userDashboardBanner">
+        <div>
+          <p class="eyebrow text-green">Your match dashboard</p>
+          <h3>Ready for your next game?</h3>
+          <p>Choose a nearby futsal court and reserve an available hour.</p>
+        </div>
+        <div class="user-dashboard-actions">
+          <button class="btn btn-primary" type="button" id="findCourtBtn"><i class="fa-solid fa-location-dot"></i> Find a futsal</button>
+          <button class="btn btn-secondary" type="button" id="viewBookingsBtn"><i class="fa-regular fa-calendar-check"></i> My bookings</button>
+        </div>
+          </section>
+
+          <div class="user-grid">
+        <div class="user-card">
+          <i class="fa-regular fa-calendar-check user-card-icon"></i>
+          <span class="mini-tag">Total bookings</span>
+          <h3 id="userTotalBookingStat">0</h3>
+          <p>All your reservations</p>
+        </div>
+        <div class="user-card">
+          <i class="fa-solid fa-bolt user-card-icon"></i>
+          <span class="mini-tag">Upcoming matches</span>
+          <h3 id="userBookingCount">0</h3>
+          <p id="userNextBooking">Book a court to see your next match here.</p>
+        </div>
+        <div class="user-card">
+          <i class="fa-solid fa-flag-checkered user-card-icon"></i>
+          <span class="mini-tag">Completed matches</span>
+          <h3 id="userCompletedBookingStat">0</h3>
+          <p>Matches played</p>
+        </div>
+        <div class="user-card">
+          <i class="fa-solid fa-futbol user-card-icon"></i>
+          <span class="mini-tag">Available futsals</span>
+          <h3 id="userVenueCount">0</h3>
+          <p>Courts ready for booking</p>
+        </div>
+          </div>
+
+          <section class="user-upcoming-match user-panel" id="userUpcomingMatchPanel" aria-labelledby="userUpcomingMatchTitle">
+            <div class="user-upcoming-match__heading">
+              <div><p class="eyebrow text-green">On your calendar</p><h3 id="userUpcomingMatchTitle">Your next match</h3></div>
+              <button class="user-upcoming-match__all" type="button" data-user-scroll="userBookingsPanel">All bookings <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+            <div id="userUpcomingMatchContent" class="user-upcoming-match__content"></div>
+          </section>
+
+          <div class="user-booking-layout">
+            <section class="user-panel hidden" id="userBookingPanel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow text-green">Reserve a pitch</p>
+              <h3>Book a futsal court</h3>
+            </div>
+          </div>
+          <form id="userBookingForm" class="user-booking-form">
+            <label class="court-search-field">Find futsal by name<input id="userCourtSearch" type="search" placeholder="Search by futsal name" autocomplete="off" /></label>
+            <label>Court<select id="userBookingCourt" required></select></label>
+            <div class="court-location" id="userCourtLocation"><span><span id="userCourtAddress">Select a futsal to see its location.</span><strong id="userCourtAvailability" class="court-availability"></strong></span><a id="userCourtMapLink" class="map-link hidden" href="#" target="_blank" rel="noopener"><i class="fa-solid fa-map-location-dot"></i> Open map</a></div>
+            <label>Date<input id="userBookingDate" type="date" required /></label>
+            <label>Time slot<select id="userBookingTime" required></select></label>
+            <div class="slot-availability-legend" aria-label="Slot availability legend"><span><i class="fa-solid fa-circle available"></i> Available</span><span><i class="fa-solid fa-circle pending"></i> Pending</span><span><i class="fa-solid fa-circle booked"></i> Booked</span></div>
+            <label>Phone<input id="userBookingPhone" type="tel" placeholder="+977-98XXXXXXXX" required /></label>
+            <label>Payment method<select id="userBookingPayment" required><option value="eSewa">eSewa</option><option value="Khalti">Khalti</option><option value="ConnectIPS">ConnectIPS</option><option value="Cash">Cash at venue</option></select></label>
+            <div class="booking-total"><span>Estimated total</span><strong id="userBookingAmount">NPR 0</strong></div>
+            <button class="btn btn-primary" type="submit"><i class="fa-regular fa-calendar-check"></i> Confirm booking</button>
+          </form>
+        </section>
+
+          <section class="user-panel" id="userBookingsPanel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow text-green">Your reservations</p>
+              <h3>My bookings</h3>
+            </div>
+          </div>
+          <div id="userBookingsList" class="user-bookings-list"></div>
+        </section>
+          </div>
+
+          <section class="user-panel user-courts-panel" id="userCourtsPanel">
+        <div class="panel__header">
+          <div>
+            <p class="eyebrow text-green">Explore venues</p>
+            <h3>Futsal courts in Nepal</h3>
+          </div>
+        <div class="user-venue-tools"><label class="user-venue-search"><i class="fa-solid fa-magnifying-glass"></i><input id="userVenueSearch" type="search" placeholder="Search futsal venues" autocomplete="off" /></label><span class="muted" id="userCourtDirectoryCount"></span><div class="user-venue-view-toggle" role="group" aria-label="Venue display"><button type="button" data-court-view="grid" aria-label="Grid view" aria-pressed="true"><i class="fa-solid fa-grip"></i></button><button type="button" data-court-view="list" aria-label="List view" aria-pressed="false"><i class="fa-solid fa-list"></i></button></div></div>
+        </div>
+        <div class="court-filter-bar" aria-label="Filter futsal grounds">
+          <label>Location<select id="userVenueLocationFilter"><option value="">All locations</option></select></label>
+          <label>Max price / hour<select id="userVenueMaxPrice"><option value="">Any price</option><option value="2000">NPR 2,000</option><option value="2500">NPR 2,500</option><option value="3000">NPR 3,000</option></select></label>
+          <label>Minimum rating<select id="userVenueMinRating"><option value="">Any rating</option><option value="4.5">4.5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option></select></label>
+          <label>Ground type<select id="userVenueTypeFilter"><option value="">Indoor &amp; outdoor</option><option value="Indoor">Indoor</option><option value="Outdoor">Outdoor</option></select></label>
+          <label>Sort by<select id="userVenueSort"><option value="popular">Top rated</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select></label>
+          <label class="court-availability-filter"><span>Available on</span><input id="userVenueAvailabilityDate" type="date" /></label>
+          <label class="court-availability-toggle"><input id="userVenueAvailableOnly" type="checkbox" /><span>Show only grounds with a free slot</span></label>
+        </div>
+        <div id="userCourtDirectory" class="user-court-directory"></div>
+          </section>
+          <section class="user-panel user-teams-panel" id="userTeamsPanel">
+            <div class="panel__header">
+              <div>
+                <p class="eyebrow text-green">Community teams</p>
+                <h3>Futsal teams</h3>
+              </div>
+            </div>
+            <div id="userTeamsList" class="user-teams-list"></div>
+          </section>
+          <section class="user-panel user-tournaments-panel" id="userTournamentsPanel">
+            <div class="panel__header">
+              <div>
+                <p class="eyebrow text-green">Community events</p>
+                <h3>Participate in futsal tournaments</h3>
+              </div>
+            </div>
+            <div id="userTournamentsList" class="user-tournaments-list"></div>
+          </section>
+
+          <section class="user-panel user-my-tournaments-panel" id="userMyTournamentsPanel">
+            <div class="panel__header">
+              <div>
+                <p class="eyebrow text-green">Your registrations</p>
+                <h3>My tournaments</h3>
+              </div>
+            </div>
+            <div id="userMyTournamentsList" class="user-my-tournaments-list"></div>
+          </section>
+
+          <section class="user-panel user-notifications-panel" id="userNotificationsPanel">
+            <div class="panel__header"><div><p class="eyebrow text-green">Updates</p><h3>Notifications</h3></div><button class="btn btn-secondary" id="markUserAllReadBtn" type="button">Mark all read</button></div>
+            <div id="userNotificationsList" class="user-notifications-list"></div>
+          </section>
+        </main>
+      </div>
+      <nav class="user-mobile-bottom-nav" aria-label="Quick navigation">
+        <button type="button" data-user-scroll="userDashboardBanner" aria-label="Dashboard"><i class="fa-solid fa-house"></i><span>Home</span></button>
+        <button type="button" data-user-scroll="userProfilePanel" aria-label="Profile"><i class="fa-solid fa-user"></i><span>Profile</span></button>
+        <button type="button" data-user-scroll="userBookingsPanel" aria-label="My bookings"><i class="fa-regular fa-calendar-check"></i><span>Bookings</span></button>
+        <button type="button" data-user-scroll="userCourtsPanel" aria-label="Find a futsal"><i class="fa-solid fa-futbol"></i><span>Discover</span></button>
+        <button type="button" data-user-scroll="userTeamsPanel" aria-label="Teams"><i class="fa-solid fa-people-group"></i><span>Teams</span></button>
+        <button type="button" data-user-scroll="userNotificationsPanel" aria-label="Notifications"><i class="fa-regular fa-bell"></i><span>Updates</span></button>
+        <button type="button" data-user-scroll="userTournamentsPanel" aria-label="Tournaments"><i class="fa-solid fa-trophy"></i><span>Tournaments</span></button>
+        <button type="button" data-user-scroll="userMyTournamentsPanel" aria-label="My tournaments"><i class="fa-solid fa-list-check"></i><span>My events</span></button>
+      </nav>
+      <button class="user-back-to-top" id="userBackToTop" type="button" aria-label="Back to top" title="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
+    </div>
+
+    <div id="ownerSection" class="user-section hidden">
+      <header class="user-header">
+        <div>
+          <p class="eyebrow text-green">FUTSAL NEPAL</p>
+          <h2><span id="ownerGreetingText">Good morning</span>, <span id="ownerDisplayName">court owner</span></h2>
+          <p class="muted">Manage your court availability, pricing and bookings.</p>
+        </div>
+        <div class="owner-header-actions">
+            <button class="owner-header-action" id="ownerBookingRequestsBtn" type="button" aria-label="View booking requests" title="Booking requests">
+            <i class="fa-regular fa-calendar-check"></i><span>Booking requests</span><strong id="ownerBookingRequestsCount">0</strong>
+          </button>
+          <div class="owner-notification-menu">
+            <button class="owner-header-action" id="ownerNotificationsBtn" type="button" aria-label="View notifications" title="Notifications" aria-expanded="false">
+              <i class="fa-solid fa-bell"></i><span>Notifications</span><strong id="ownerNotificationsCount">0</strong>
+            </button>
+            <div class="owner-notification-dropdown is-hidden" id="ownerNotificationDropdown">
+              <div class="owner-notification-dropdown__header"><strong>Notifications</strong><span id="ownerNotificationSummary">0 updates</span></div>
+              <div id="ownerNotificationPreview" class="owner-notification-dropdown__list"></div>
+              <button type="button" class="owner-notification-dropdown__footer" id="markOwnerNotificationsReadBtn">Mark all read</button>
+              <button type="button" class="owner-notification-dropdown__footer" id="viewOwnerNotificationsBtn">View all notifications</button>
+            </div>
+          </div>
+          <button class="btn btn-secondary" id="ownerLogoutBtn" type="button">Logout</button>
+        </div>
+      </header>
+      <nav class="owner-page-nav" aria-label="Owner sections">
+        <button type="button" data-owner-view="overview"><i class="fa-solid fa-house"></i><span>Overview</span></button>
+        <button type="button" data-owner-view="courts"><i class="fa-solid fa-futbol"></i><span>Courts</span></button>
+        <button type="button" data-owner-view="bookings"><i class="fa-regular fa-calendar-check"></i><span>Bookings</span></button>
+        <button type="button" data-owner-view="updates"><i class="fa-regular fa-bell"></i><span>Updates</span></button>
+      </nav>
+      <div class="owner-view-heading" aria-live="polite">
+        <p>GROUND OWNER PORTAL</p>
+        <h2 id="ownerCurrentViewTitle">Overview</h2>
+      </div>
+      <section class="portal-hero owner-portal-hero" id="ownerProfilePanel" aria-labelledby="ownerHeroTitle">
+        <div class="portal-hero__copy">
+          <p class="eyebrow">Ground owner dashboard</p>
+          <h1 id="ownerHeroTitle">Run your ground with clarity.</h1>
+          <p>Welcome back, <strong id="ownerHeroName">court owner</strong>. Keep your courts, bookings, and players moving.</p>
+          <div class="portal-hero__actions">
+            <button class="btn btn-primary" type="button" id="ownerHeroBookingsBtn"><i class="fa-regular fa-calendar-check"></i> View bookings</button>
+            <button class="btn btn-ghost-light" type="button" id="ownerHeroProfileBtn"><i class="fa-solid fa-user"></i> View profile</button>
+          </div>
+        </div>
+        <div class="portal-hero__profile">
+          <div class="portal-hero__profile-identity" id="ownerHeroProfile"></div>
+          <button class="portal-hero__edit-button" id="ownerProfileEditBtn" type="button" aria-label="Edit profile" title="Edit profile"><i class="fa-solid fa-pen"></i><span>Edit profile</span></button>
+          <form id="ownerProfileForm" class="user-profile-form portal-hero__profile-form hidden">
+            <label>Name<input name="name" type="text" required /></label>
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-user-pen"></i> Save profile</button>
+          </form>
+        </div>
+      </section>
+      <section class="owner-summary-grid" id="ownerDashboardSummary"></section>
+      <section class="user-panel owner-period-panel">
+        <div class="panel__header"><div><p class="eyebrow text-green">Performance</p><h3>Booking statistics</h3></div></div>
+        <div id="ownerPeriodStats" class="owner-period-stats"></div>
+      </section>
+      <div id="ownerCourtPanel" class="owner-portal-grid"></div>
+      <section class="user-panel owner-reservations-panel" id="ownerReservationsPanel">
+        <div class="panel__header owner-reservations-heading"><div><p class="eyebrow text-green">Reservations</p><h3>Bookings for your courts</h3></div></div>
+        <div id="ownerBookingsList" class="owner-bookings-list"></div>
+      </section>
+      <section class="user-panel user-notifications-panel" id="ownerNotificationsPanel">
+        <div class="panel__header"><div><p class="eyebrow text-green">Updates</p><h3>Notifications</h3></div><button class="btn btn-secondary" id="markOwnerAllReadBtn" type="button">Mark all read</button></div>
+        <div id="ownerNotificationsList" class="user-notifications-list"></div>
+      </section>
+      <nav class="owner-mobile-bottom-nav" aria-label="Owner quick navigation">
+        <button type="button" data-owner-view="overview" aria-label="Overview"><i class="fa-solid fa-house"></i><span>Overview</span></button>
+        <button type="button" data-owner-view="courts" aria-label="Courts"><i class="fa-solid fa-futbol"></i><span>Courts</span></button>
+        <button type="button" data-owner-view="bookings" aria-label="Bookings"><i class="fa-regular fa-calendar-check"></i><span>Bookings</span></button>
+        <button type="button" data-owner-view="updates" aria-label="Updates"><i class="fa-regular fa-bell"></i><span>Updates</span></button>
+      </nav>
+    </div>
+
+    <div id="app-shell" class="app-shell hidden">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar__brand">
+          <div class="brand-mark">
+            <img src="assets/logo.svg" alt="Futsal Nepal" />
+          </div>
+          <div>
+            <div class="brand-name">FUTSAL NEPAL</div>
+            <small>BOOK • PLAY • CONNECT</small>
+          </div>
+        </div>
+
+        <nav class="sidebar__nav" aria-label="Sidebar navigation">
+          <button class="nav-link active" data-view="dashboard"><i class="fa-solid fa-house"></i><span>Dashboard</span></button>
+          <button class="nav-link" data-view="courts"><i class="fa-solid fa-futbol"></i><span>Courts</span></button>
+          <button class="nav-link" data-view="bookings"><i class="fa-regular fa-calendar-check"></i><span>Bookings</span></button>
+          <button class="nav-link" data-view="users"><i class="fa-solid fa-users"></i><span>Users</span></button>
+          <button class="nav-link" data-view="teams"><i class="fa-solid fa-people-group"></i><span>Teams</span></button>
+          <button class="nav-link" data-view="matches"><i class="fa-solid fa-trophy"></i><span>Matches</span></button>
+          <button class="nav-link" data-view="tournaments"><i class="fa-solid fa-medal"></i><span>Tournaments</span></button>
+          <button class="nav-link" data-view="payments"><i class="fa-solid fa-wallet"></i><span>Payments</span></button>
+          <button class="nav-link" data-view="reviews"><i class="fa-solid fa-star"></i><span>Reviews</span></button>
+          <button class="nav-link" data-view="notifications"><i class="fa-solid fa-bell"></i><span>Notifications</span></button>
+          <button class="nav-link" data-view="reports"><i class="fa-solid fa-chart-line"></i><span>Reports &amp; Analytics</span></button>
+          <button class="nav-link" data-view="admins"><i class="fa-solid fa-shield-halved"></i><span>Admins</span></button>
+          <button class="nav-link" data-view="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
+          <button class="nav-link logout-link" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
+        </nav>
+
+        <div class="sidebar__profile">
+          <div class="profile-avatar">AN</div>
+          <div>
+            <strong id="sidebarAccountName">Administrator</strong>
+            <small id="sidebarAccountRole">Admin</small>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div class="topbar__left">
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <div>
+              <p class="eyebrow">Operational overview</p>
+              <h1 id="pageTitle">Dashboard</h1>
+            </div>
+          </div>
+
+          <div class="topbar__actions">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="search" id="globalSearch" placeholder="Search" />
+            </div>
+            <div class="notification-menu">
+              <button class="icon-btn" id="adminNotificationBell" aria-label="Notifications" aria-expanded="false">
+                <i class="fa-solid fa-bell"></i>
+                <span class="badge" id="adminNotificationBadge">0</span>
+              </button>
+              <div class="notification-dropdown is-hidden" id="adminNotificationDropdown">
+                <div class="notification-dropdown__header"><strong>Notifications</strong><span id="adminNotificationCount">0 new</span></div>
+                <div id="adminNotificationPreview" class="notification-dropdown__list"></div>
+                <button type="button" class="notification-dropdown__footer" id="markAdminNotificationsReadBtn">Mark all read</button>
+                <button type="button" class="notification-dropdown__footer" id="viewAllNotificationsBtn">View all notifications</button>
+              </div>
+            </div>
+            <div class="user-menu">
+              <div class="avatar-mini" id="topbarAccountInitials">FN</div>
+              <div>
+                <strong id="topbarAccountName">Futsal Nepal</strong>
+                <small id="topbarAccountRole">Admin</small>
+              </div>
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+          </div>
+        </header>
+
+        <div class="content-wrap">
+          <section id="dashboard-section" class="page-section active" data-page="dashboard">
+            <div class="hero-card">
+              <div>
+                <p class="eyebrow text-green"><span id="adminGreeting">Good morning</span>, <span id="adminGreetingName">Admin</span> 👋</p>
+                <h2>Here's what's happening with Futsal Nepal today.</h2>
+                <p class="hero-subtitle">Track bookings, monitor court performance, and keep your community active across every venue.</p>
+              </div>
+              <div class="hero-card__meta">
+                <div><span>Live bookings</span><strong id="heroLiveBookings">0</strong></div>
+                <div><span>Occupancy</span><strong id="heroOccupancy">0%</strong></div>
+              </div>
+            </div>
+            <div id="statsGrid" class="stats-grid"></div>
+            <div class="analytics-grid">
+              <div class="panel chart-panel large">
+                <div class="panel__header">
+                  <div>
+                    <p class="eyebrow">Overview</p>
+                    <h3>Booking Analytics</h3>
+                  </div>
+                  <div class="segmented-control" id="bookingRangeTabs">
+                    <button class="active" data-range="today">Today</button>
+                    <button data-range="7d">7 Days</button>
+                    <button data-range="30d">30 Days</button>
+                    <button data-range="3m">3 Months</button>
+                    <button data-range="1y">1 Year</button>
+                  </div>
+                </div>
+                <canvas id="bookingChart"></canvas>
+              </div>
+
+              <div class="panel chart-panel">
+                <div class="panel__header">
+                  <div>
+                    <p class="eyebrow">Revenue</p>
+                    <h3>Revenue Analytics</h3>
+                  </div>
+                </div>
+                <canvas id="revenueChart"></canvas>
+              </div>
+
+              <div class="panel chart-panel">
+                <div class="panel__header">
+                  <div>
+                    <p class="eyebrow">Users</p>
+                    <h3>User Growth</h3>
+                  </div>
+                </div>
+                <canvas id="userGrowthChart"></canvas>
+              </div>
+
+              <div class="panel chart-panel">
+                <div class="panel__header">
+                  <div>
+                    <p class="eyebrow">Top courts</p>
+                    <h3>Popular Courts</h3>
+                  </div>
+                </div>
+                <div id="popularCourtsList" class="rank-list"></div>
+              </div>
+
+              <div class="panel chart-panel">
+                <div class="panel__header">
+                  <div>
+                    <p class="eyebrow">Status</p>
+                    <h3>Booking Status</h3>
+                  </div>
+                </div>
+                <canvas id="bookingStatusChart"></canvas>
+              </div>
+            </div>
+          </section>
+
+          <section id="courts-section" class="page-section" data-page="courts">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Operations</p>
+                <h2>Courts</h2>
+              </div>
+              <button class="btn btn-primary" id="addCourtBtn"><i class="fa-solid fa-plus"></i> Add Ground</button>
+            </div>
+            <div class="table-controls">
+              <div class="search-box compact"><i class="fa-solid fa-magnifying-glass"></i><input id="courtSearch" type="search" placeholder="Search courts" /></div>
+              <button class="btn btn-secondary" id="toggleCourtViewBtn"><i class="fa-solid fa-table-cells"></i> Card View</button>
+            </div>
+            <div id="courtsTableContainer" class="data-card table-card"></div>
+          </section>
+
+          <section id="bookings-section" class="page-section" data-page="bookings">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Operations</p>
+                <h2>Bookings</h2>
+              </div>
+            </div>
+            <div class="table-controls">
+              <div class="search-box compact"><i class="fa-solid fa-magnifying-glass"></i><input id="bookingSearch" type="search" placeholder="Search bookings" /></div>
+              <select id="bookingStatusFilter"><option value="all">All status</option></select>
+            </div>
+            <div id="bookingsTableContainer" class="data-card table-card"></div>
+          </section>
+
+          <section id="users-section" class="page-section" data-page="users">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Community</p>
+                <h2>Users</h2>
+              </div>
+              <button class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Add User</button>
+            </div>
+            <div id="usersTableContainer" class="data-card table-card"></div>
+          </section>
+
+          <section id="teams-section" class="page-section" data-page="teams">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Community</p>
+                <h2>Teams</h2>
+              </div>
+              <button class="btn btn-primary"><i class="fa-solid fa-people-group"></i> Create Team</button>
+            </div>
+            <div id="teamsTableContainer" class="data-card table-card"></div>
+          </section>
+
+          <section id="matches-section" class="page-section" data-page="matches">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Events</p>
+                <h2>Matches</h2>
+              </div>
+              <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Schedule Match</button>
+            </div>
+            <div id="matchesTableContainer" class="data-card table-card"></div>
+          </section>
+
+          <section id="tournaments-section" class="page-section" data-page="tournaments">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Events</p>
+                <h2>Tournaments</h2>
+              </div>
+              <button class="btn btn-primary" id="addTournamentBtn" type="button"><i class="fa-solid fa-plus"></i> Create Tournament</button>
+            </div>
+            <div class="table-controls">
+              <div class="search-box compact"><i class="fa-solid fa-magnifying-glass"></i><input id="tournamentSearch" type="search" placeholder="Search tournaments" /></div>
+              <select id="tournamentStatusFilter">
+                <option value="all">All status</option>
+                <option value="Open">Open</option>
+                <option value="Closed">Closed</option>
+                <option value="Draft">Draft</option>
+              </select>
+            </div>
+            <div id="tournamentsTableContainer" class="data-card table-card"></div>
+          </section>
+
+          <section id="payments-section" class="page-section" data-page="payments">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Finance</p>
+                <h2>Payments</h2>
+              </div>
+            </div>
+            <div id="paymentsTableContainer" class="data-card table-card"></div>
+          </section>
+
+          <section id="reviews-section" class="page-section" data-page="reviews">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Feedback</p>
+                <h2>Reviews &amp; Ratings</h2>
+              </div>
+            </div>
+            <div id="reviewsTableContainer" class="data-card table-card"></div>
+          </section>
+
+          <section id="notifications-section" class="page-section" data-page="notifications">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Engagement</p>
+                <h2>Notifications</h2>
+              </div>
+              <button class="btn btn-primary" id="addNotificationBtn"><i class="fa-solid fa-paper-plane"></i> Send Alert</button>
+            </div>
+            <div id="notificationsTableContainer" class="data-card table-card"></div>
+          </section>
+
+          <section id="reports-section" class="page-section" data-page="reports">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Analytics</p>
+                <h2>Reports &amp; Analytics</h2>
+              </div>
+              <div class="action-group">
+                <button class="btn btn-secondary" id="exportReportsBtn" type="button"><i class="fa-solid fa-download"></i> Export CSV</button>
+                <button class="btn btn-secondary" id="printReportsBtn" type="button"><i class="fa-solid fa-print"></i> Print</button>
+              </div>
+            </div>
+            <p class="reports-data-source" id="reportsDataSource" aria-live="polite">Waiting for Firebase data</p>
+            <div class="analytics-grid reports-analytics-grid">
+              <article class="chart-panel large"><div class="chart-panel__header"><h3>Bookings by ground</h3><span>Current Firebase data</span></div><div class="chart-wrap"><canvas id="reportsBookingsChart" aria-label="Bar chart of bookings by ground"></canvas></div></article>
+              <article class="chart-panel"><div class="chart-panel__header"><h3>Booking status</h3><span>All booking records</span></div><div class="chart-wrap"><canvas id="reportsStatusChart" aria-label="Pie chart of booking statuses"></canvas></div></article>
+              <article class="chart-panel large"><div class="chart-panel__header"><h3>Revenue by ground</h3><span>Paid payments / bookings</span></div><div class="chart-wrap"><canvas id="reportsRevenueChart" aria-label="Bar chart of paid revenue by ground"></canvas></div></article>
+            </div>
+            <div id="reportsTableContainer" class="data-card table-card"></div>
+          </section>
+
+          <section id="admins-section" class="page-section" data-page="admins">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">Security</p>
+                <h2>Admins</h2>
+              </div>
+              <button class="btn btn-primary"><i class="fa-solid fa-user-shield"></i> Add Admin</button>
+            </div>
+            <div id="adminsTableContainer" class="data-card table-card"></div>
+          </section>
+
+          <section id="settings-section" class="page-section" data-page="settings">
+            <div class="section-toolbar">
+              <div>
+                <p class="eyebrow">System</p>
+                <h2>Settings</h2>
+              </div>
+            </div>
+            <div class="settings-grid">
+              <div class="panel">
+                <div class="panel__header"><h3>Firebase configuration</h3></div>
+                <p class="muted">Update the Firebase values in the config file to connect the dashboard to your project.</p>
+                <button class="btn btn-primary" id="seedDemoDataBtn">Load demo data</button>
+              </div>
+              <div class="panel">
+                <div class="panel__header"><h3>Branding</h3></div>
+                <div class="field-grid">
+                  <label>App name <input type="text" value="FUTSAL NEPAL" /></label>
+                  <label>Tagline <input type="text" value="BOOK • PLAY • CONNECT" /></label>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <footer class="site-footer">
+          <div class="site-footer__brand">
+            <div class="brand-mark"><img src="assets/logo.svg" alt="FUTSAL NEPAL logo" /></div>
+            <div>
+              <strong>FUTSAL NEPAL</strong>
+              <span>Book • Play • Connect</span>
+            </div>
+          </div>
+          <div class="site-footer__links">
+            <div>
+              <h4>Platform</h4>
+              <a href="#">Dashboard</a>
+              <a href="#">Bookings</a>
+              <a href="#">Courts</a>
+            </div>
+            <div>
+              <h4>Support</h4>
+              <a href="#">Help center</a>
+              <a href="#">Terms</a>
+              <a href="#">Privacy</a>
+            </div>
+            <div>
+              <h4>Contact</h4>
+              <a href="tel:+9779868963726">+977 9868963726</a>
+              <a href="mailto:shishirgautam620@gmail.com">shishirgautam620@gmail.com</a>
+              <span>Hetauda, Nepal</span>
+            </div>
+          </div>
+        </footer>
+      </main>
+    </div>
+
+    <div id="loginModal" class="modal hidden" aria-hidden="true">
+      <div class="modal__backdrop"></div>
+      <div class="modal__pane login-pane">
+        <div class="brand-badge">FUTSAL NEPAL</div>
+        <h2>Admin Login</h2>
+        <p class="muted">Sign in to manage courts, bookings and memberships.</p>
+        <form id="loginForm" autocomplete="off">
+          <label>
+            Email
+            <input type="email" id="loginEmail" value="" autocomplete="off" required />
+          </label>
+          <label>
+            Password
+            <input type="password" id="loginPassword" value="" autocomplete="new-password" required />
+          </label>
+          <button class="btn btn-primary full-width" type="submit">Login</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="genericModal" class="modal hidden" aria-hidden="true">
+      <div class="modal__backdrop"></div>
+      <div class="modal__pane" id="genericModalBody"></div>
+    </div>
+
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+    <button id="installAppButton" class="install-app-button" type="button" aria-label="Install Futsal Nepal app" title="Install app">
+      <i class="fa-solid fa-download" aria-hidden="true"></i><span>Install app</span>
+    </button>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "FUTSAL NEPAL",
+        "description": "Modern futsal court booking and management platform for players, owners, and administrators.",
+        "url": "https://futsalnepal.example",
+        "logo": "assets/logo.svg",
+        "sameAs": []
+      }
+    </script>
+
+    <script src="js/firebase-config.js?v=20261002-1"></script>
+    <script src="js/firebase-data.js?v=20260927-5"></script>
+    <script src="js/components.js"></script>
+    <script src="js/install.js?v=20260927-1"></script>
+    <script src="js/auth.js?v=20261105-6"></script>
+    <script src="js/user-portal.js?v=20261101-2"></script>
+    <script src="js/owner-portal.js?v=20261101-2"></script>
+    <script src="js/dashboard.js?v=20260927-1"></script>
+    <script src="js/courts.js?v=20260927-6"></script>
+    <script src="js/bookings.js?v=20260927-1"></script>
+    <script src="js/users.js?v=20260912-3"></script>
+    <script src="js/teams.js"></script>
+    <script src="js/matches.js"></script>
+    <script src="js/tournaments.js"></script>
+    <script src="js/payments.js"></script>
+    <script src="js/reviews.js"></script>
+    <script src="js/notifications.js?v=20260927-1"></script>
+    <script src="js/reports.js?v=20260927-1"></script>
+    <script src="js/admins.js?v=20260912-2"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/app.js?v=20261002-1"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('./sw.js').catch(function(error) {
+            console.warn('Offline app shell unavailable:', error);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

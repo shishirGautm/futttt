@@ -1,0 +1,161 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function hasAdminRole(role) {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == role)
+        || request.auth.token.role == role
+      );
+    }
+
+    function hasUserRole(role) {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role)
+        || request.auth.token.role == role
+      );
+    }
+
+    function isSuperAdmin() {
+      return hasAdminRole('Super Admin') || hasUserRole('Super Admin');
+    }
+
+    function isStaff() {
+      return isSuperAdmin() || hasAdminRole('Admin') || hasAdminRole('Manager') || hasUserRole('Admin') || hasUserRole('Manager');
+    }
+
+    function ownsCourt(courtId) {
+      return isAuthenticated() && exists(/databases/$(database)/documents/courts/$(courtId)) && (get(/databases/$(database)/documents/courts/$(courtId)).data.ownerId == request.auth.uid || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name == get(/databases/$(database)/documents/courts/$(courtId)).data.owner));
+    }
+
+    function hasPendingBooking(bookingId, userId) {
+      return existsAfter(/databases/$(database)/documents/bookings/$(bookingId))
+        && getAfter(/databases/$(database)/documents/bookings/$(bookingId)).data.userId == userId
+        && getAfter(/databases/$(database)/documents/bookings/$(bookingId)).data.bookingStatus == 'Pending';
+    }
+
+    function validBookingStatusTransition() {
+      return request.resource.data.bookingStatus == resource.data.bookingStatus
+        || (resource.data.bookingStatus == 'Pending' && request.resource.data.bookingStatus in ['Confirmed', 'Rejected', 'Cancelled'])
+        || (resource.data.bookingStatus == 'Confirmed' && request.resource.data.bookingStatus in ['Cancelled', 'Completed']);
+    }
+
+    match /users/{userId} {
+      allow read, create, update: if isAuthenticated() && (request.auth.uid == userId || isStaff());
+      allow delete: if isStaff() || ownsCourt(resource.data.courtId);
+    }
+
+    match /courts/{courtId} {
+      allow read: if isAuthenticated();
+      allow create: if isStaff() || (isAuthenticated() && request.resource.data.ownerId == request.auth.uid);
+      allow delete: if isStaff();
+      allow update: if isStaff() || (ownsCourt(courtId) && request.resource.data.ownerId == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'images', 'address', 'city', 'district', 'province', 'contactNumber', 'pricePerHour', 'type', 'turfType', 'status', 'openingTime', 'closingTime', 'description', 'ownerId', 'slotDuration', 'blockedSlots']));
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated() && (isStaff() || resource.data.userId == request.auth.uid || ownsCourt(resource.data.courtId));
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && request.resource.data.bookingStatus == 'Pending';
+      allow update: if (isStaff() && validBookingStatusTransition()) || (isAuthenticated() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid && request.resource.data.bookingStatus == 'Pending') || (isAuthenticated() && resource.data.userId == request.auth.uid && request.resource.data.bookingStatus == 'Cancelled' && resource.data.bookingStatus in ['Pending', 'Confirmed'] && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bookingStatus'])) || (ownsCourt(resource.data.courtId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bookingStatus']) && validBookingStatusTransition());
+      allow delete: if isStaff() || ownsCourt(resource.data.courtId)
+        || (isAuthenticated() && resource.data.userId == request.auth.uid && resource.data.bookingStatus in ['Cancelled', 'Rejected', 'Completed']);
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && (isStaff() || resource.data.userId == request.auth.uid || ownsCourt(resource.data.courtId));
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && request.resource.data.status == 'Pending';
+      allow update: if isStaff() || (isAuthenticated() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid && request.resource.data.status == 'Pending');
+      allow delete: if isStaff() || ownsCourt(resource.data.courtId);
+    }
+
+    match /teams/{teamId} {
+      allow read: if isAuthenticated();
+      allow write: if isStaff();
+    }
+
+    match /matches/{matchId} {
+      allow read: if isAuthenticated();
+      allow write: if isStaff();
+    }
+
+    match /tournaments/{tournamentId} {
+      allow read: if isAuthenticated();
+      allow create, delete: if isStaff();
+      allow update: if isStaff()
+        || (isAuthenticated()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants'])
+          && request.resource.data.get('participants', []).size() == resource.data.get('participants', []).size() + 1
+          && request.resource.data.participants[request.resource.data.get('participants', []).size() - 1].userId == request.auth.uid)
+        || (isAuthenticated()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants'])
+          && request.resource.data.get('participants', []).size() == resource.data.get('participants', []).size() - 1);
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isStaff() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+    }
+
+    match /reports/{reportId} {
+      allow read, write: if isStaff();
+    }
+
+    match /admins/{adminId} {
+      allow read: if isAuthenticated() && (request.auth.uid == adminId || isStaff());
+      allow write: if isSuperAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isStaff() || (isAuthenticated() && resource.data.targetUserId == request.auth.uid);
+      allow create: if isStaff()
+        || (isAuthenticated() && request.resource.data.type == 'booking_created' && request.resource.data.targetRole == 'User' && request.resource.data.targetUserId == request.auth.uid && request.resource.data.userId == request.auth.uid && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.userId == request.auth.uid && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.bookingStatus == 'Pending')
+        || (isAuthenticated() && request.resource.data.type == 'booking_created' && request.resource.data.targetRole == 'Admin' && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.userId == request.auth.uid && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.bookingStatus == 'Pending')
+        || (isAuthenticated() && request.resource.data.type == 'booking_created' && request.resource.data.targetRole == 'Owner' && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.userId == request.auth.uid && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.bookingStatus == 'Pending' && get(/databases/$(database)/documents/courts/$(request.resource.data.courtId)).data.ownerId == request.resource.data.targetUserId)
+        || (isAuthenticated() && request.resource.data.type == 'booking_confirmed' && request.resource.data.targetRole == 'User' && request.resource.data.targetUserId == getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.userId && (isStaff() || ownsCourt(request.resource.data.courtId)) && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.bookingStatus == 'Confirmed')
+        || (isAuthenticated() && request.resource.data.type == 'booking_confirmed' && request.resource.data.targetRole == 'Admin' && (isStaff() || ownsCourt(request.resource.data.courtId)) && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.bookingStatus == 'Confirmed')
+        || (isAuthenticated() && request.resource.data.type == 'booking_cancelled' && request.resource.data.targetRole == 'User' && (isStaff() || ownsCourt(request.resource.data.courtId) || getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.userId == request.auth.uid) && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.userId == request.resource.data.targetUserId && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.bookingStatus == 'Cancelled')
+        || (isAuthenticated() && request.resource.data.type == 'booking_cancelled' && request.resource.data.targetRole == 'Owner' && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.userId == request.auth.uid && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.bookingStatus == 'Cancelled' && get(/databases/$(database)/documents/courts/$(request.resource.data.courtId)).data.ownerId == request.resource.data.targetUserId)
+        || (isAuthenticated() && request.resource.data.type == 'booking_cancelled' && request.resource.data.targetRole == 'Admin' && (isStaff() || getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.userId == request.auth.uid || ownsCourt(request.resource.data.courtId)) && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.bookingStatus == 'Cancelled')
+        || (isAuthenticated() && request.resource.data.type == 'booking_rejected' && request.resource.data.targetRole == 'User' && request.resource.data.targetUserId == get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.userId && (isStaff() || ownsCourt(get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.courtId)))
+        || (isAuthenticated() && request.resource.data.type == 'booking_rejected' && request.resource.data.targetRole == 'Admin' && (isStaff() || ownsCourt(get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.courtId)));
+      allow update: if isStaff()
+        || (isAuthenticated() && resource.data.targetUserId == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']));
+      allow delete: if isStaff() || (isAuthenticated() && resource.data.targetUserId == request.auth.uid);
+    }
+
+    match /bookingSlots/{slotId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'Pending'
+        && request.resource.data.bookingStatus == 'Pending'
+        && hasPendingBooking(request.resource.data.bookingId, request.auth.uid);
+      allow update: if isStaff()
+        || (isAuthenticated() && resource.data.userId == request.auth.uid && request.resource.data.bookingId == resource.data.bookingId && request.resource.data.status == 'Available' && request.resource.data.bookingStatus == 'Cancelled')
+        || (ownsCourt(resource.data.courtId) && request.resource.data.bookingId == resource.data.bookingId && request.resource.data.status == 'Available' && request.resource.data.bookingStatus in ['Rejected', 'Cancelled', 'Completed'])
+        || (ownsCourt(resource.data.courtId) && request.resource.data.bookingId == resource.data.bookingId && request.resource.data.bookingStatus == 'Confirmed' && request.resource.data.status == 'Confirmed' && getAfter(/databases/$(database)/documents/bookings/$(resource.data.bookingId)).data.bookingStatus == 'Confirmed')
+        || (isAuthenticated()
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.status == 'Pending'
+          && request.resource.data.bookingStatus == 'Pending'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bookingId', 'userId', 'status', 'bookingStatus', 'expiresAt'])
+          && (resource.data.status in ['Available', 'Rejected', 'Cancelled', 'Completed']
+            || (resource.data.bookingStatus == 'Pending'
+              && resource.data.get('expiresAt', 0) is int
+              && resource.data.get('expiresAt', 0) <= request.time.seconds() * 1000 + request.time.nanos() / 1000000))
+          && hasPendingBooking(request.resource.data.bookingId, request.auth.uid));
+      allow delete: if isStaff() || ownsCourt(resource.data.courtId)
+        || (isAuthenticated() && resource.data.userId == request.auth.uid && resource.data.bookingStatus in ['Available', 'Cancelled', 'Rejected', 'Completed']);
+    }
+
+    match /activityLogs/{activityId} {
+      allow create: if isAuthenticated() && request.resource.data.actorId == request.auth.uid;
+      allow read: if isStaff() || (isAuthenticated() && resource.data.actorId == request.auth.uid);
+      allow update, delete: if isStaff();
+    }
+
+  }
+}
